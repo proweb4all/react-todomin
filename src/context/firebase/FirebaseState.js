@@ -1,8 +1,9 @@
-import React, {useReducer} from 'react'
+import React, {useReducer, useContext} from 'react'
 import axios from 'axios'
 import { FirebaseContext } from './firebaseContext'
 import { firebaseReducer } from './firebaseReducer'
 import { ADD_NOTE, REMOVE_NOTE, SHOW_LOADER, FETCH_NOTES } from '../types'
+// import { AlertContext } from '../alert/alertContext'
 
 const url = process.env.REACT_APP_DB_URL
 
@@ -11,6 +12,7 @@ export const FirebaseState = ({children}) => {
         notes: [],
         loading: false
     }
+    // const alert = useContext(AlertContext)
     const [state, dispatch] = useReducer(firebaseReducer, initialState)
     const showLoader = () => dispatch({type: SHOW_LOADER})
     const fetchNotes = async () => {
@@ -24,6 +26,7 @@ export const FirebaseState = ({children}) => {
             }
         })
         dispatch({type:FETCH_NOTES, payload})
+        // alert.show('Данные загружены', 'success')
     }
     const addNote = async title => {
         const note = {
@@ -32,18 +35,19 @@ export const FirebaseState = ({children}) => {
         try {
             const res = await axios.post(`${url}/notes.json`, note)
             // console.log('addNote', res.data)
-            const payLoad = {
+            const payload = {
                 ...note,
                 id: res.data.name
             }
-            dispatch({type: ADD_NOTE, payLoad})
+            dispatch({type: ADD_NOTE, payload})
         } catch (e) {
             throw new Error(e.message)
         }
     }
     const removeNote = async id => {
-        await axios.dalete(`${url}/notes/${id}.json`)
+        await axios.delete(`${url}/notes/${id}.json`)
         dispatch({type: REMOVE_NOTE, payload:id})
+        // alert.show('Заметка была удалена', 'warning')
     }
     return (
         <FirebaseContext.Provider value={{
